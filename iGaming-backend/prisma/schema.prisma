@@ -20,6 +20,7 @@ model User {
 
 model GameSession {
   id           String    @id @default(cuid())
+  sessionNumber Int      @unique @default(autoincrement())
   startedAt    DateTime  @default(now())
   endsAt       DateTime
   winningNumber Int?

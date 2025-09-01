@@ -54,9 +54,15 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
         if (status.timeLeft <= 0) {
           const currentSession = await this.gameService.getCurrentSession();
           if (currentSession) {
-            // Get participants before completing session
-            const sessionParticipants = currentSession.participants;
             const result = await this.gameService.completeSession(currentSession.id);
+            
+            // If result is null, session was deleted due to no participants
+            if (result === null) {
+              // Just broadcast that no session is active now
+              const newStatus = await this.gameService.getSessionStatus();
+              this.broadcastToAll('sessionStatus', newStatus);
+              return;
+            }
             
             // Get completed session with updated data
             const completedSession = await this.prisma.gameSession.findUnique({
@@ -85,8 +91,8 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
               this.broadcastToAll('gameResult', gameResult);
 
+              // Wait 10 seconds before allowing new sessions (don't auto-create)
               setTimeout(async () => {
-                const newSession = await this.gameService.createNewSession();
                 const newStatus = await this.gameService.getSessionStatus();
                 this.broadcastToAll('sessionStatus', newStatus);
               }, 10000);

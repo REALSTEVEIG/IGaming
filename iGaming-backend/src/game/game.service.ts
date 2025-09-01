@@ -136,6 +136,28 @@ export class GameService {
   }
 
   async completeSession(sessionId: string) {
+    // First check if session has any active participants
+    const session = await this.prisma.gameSession.findUnique({
+      where: { id: sessionId },
+      include: {
+        participants: {
+          where: { isInQueue: false }
+        }
+      }
+    });
+
+    if (!session) {
+      throw new Error('Session not found');
+    }
+
+    // If no active participants, delete the session instead of completing it
+    if (session.participants.length === 0) {
+      await this.prisma.gameSession.delete({
+        where: { id: sessionId }
+      });
+      return null;
+    }
+
     const winningNumber = Math.floor(Math.random() * 9) + 1;
 
     const updatedSession = await this.prisma.gameSession.update({

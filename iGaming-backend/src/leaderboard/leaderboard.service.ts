@@ -50,13 +50,16 @@ export class LeaderboardService {
       where: whereClause,
       include: {
         participants: {
+          where: {
+            isInQueue: false, // Only include active participants, not queued ones
+          },
           include: {
             user: true,
           },
         },
       },
       orderBy: {
-        startedAt: 'desc',
+        sessionNumber: 'desc', // Order by session number instead of date
       },
     });
   }
