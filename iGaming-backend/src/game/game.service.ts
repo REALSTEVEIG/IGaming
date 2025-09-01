@@ -39,24 +39,78 @@ export class GameService {
   async joinSession(userId: string, joinSessionDto: JoinSessionDto) {
     const maxPlayers = parseInt(process.env.MAX_PLAYERS_PER_SESSION) || 10;
     
-    const currentSession = await this.getCurrentSession();
-    
-    if (!currentSession) {
-      const newSession = await this.createNewSession(userId);
-      return this.addParticipantToSession(userId, newSession.id);
-    }
+    // Use database transaction to prevent race conditions
+    return this.prisma.$transaction(async (tx) => {
+      // Check if user already has an active session
+      const existingParticipant = await tx.sessionParticipant.findFirst({
+        where: {
+          userId,
+          session: {
+            isActive: true,
+            isCompleted: false,
+          },
+        },
+      });
 
-    if (new Date() > currentSession.endsAt) {
-      throw new BadRequestException('Session has ended');
-    }
+      if (existingParticipant) {
+        throw new BadRequestException('User already has an active session');
+      }
 
-    const activeParticipants = currentSession.participants.filter(p => !p.isInQueue);
-    
-    if (activeParticipants.length >= maxPlayers) {
-      return this.addParticipantToQueue(userId, currentSession.id);
-    }
+      // Get or create current session with fresh data inside transaction
+      let currentSession = await tx.gameSession.findFirst({
+        where: {
+          isActive: true,
+          isCompleted: false,
+        },
+        include: {
+          participants: {
+            include: {
+              user: true,
+            },
+          },
+        },
+      });
+      
+      // If no active session exists, create one
+      if (!currentSession) {
+        const newSession = await tx.gameSession.create({
+          data: {
+            endsAt: new Date(Date.now() + (parseInt(process.env.SESSION_DURATION) || 20) * 1000),
+            startedById: userId,
+            isActive: true,
+            isCompleted: false,
+          },
+        });
+        return tx.sessionParticipant.create({
+          data: {
+            userId,
+            sessionId: newSession.id,
+            isInQueue: false,
+          },
+        });
+      }
 
-    return this.addParticipantToSession(userId, currentSession.id);
+      if (new Date() > currentSession.endsAt) {
+        throw new BadRequestException('Session has ended');
+      }
+
+      // Count active participants with fresh data
+      const activeParticipants = currentSession.participants.filter(p => !p.isInQueue);
+      
+      // If session is full (10 users), throw error instead of queueing
+      if (activeParticipants.length >= maxPlayers) {
+        throw new BadRequestException(`Session is full (${maxPlayers}/${maxPlayers} players). Please wait for the next session.`);
+      }
+
+      // Add to active session
+      return tx.sessionParticipant.create({
+        data: {
+          userId,
+          sessionId: currentSession.id,
+          isInQueue: false,
+        },
+      });
+    });
   }
 
   async leaveSession(userId: string) {

@@ -31,6 +31,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (savedToken) {
       setToken(savedToken)
       axios.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`
+      
+      // Decode JWT to get user data
+      try {
+        const payload = JSON.parse(atob(savedToken.split('.')[1]))
+        setUser({
+          id: payload.sub,
+          username: payload.username
+        })
+      } catch (error) {
+        console.error('Error decoding token:', error)
+        // If token is invalid, remove it
+        localStorage.removeItem('token')
+        delete axios.defaults.headers.common['Authorization']
+      }
     }
     setLoading(false)
   }, [])

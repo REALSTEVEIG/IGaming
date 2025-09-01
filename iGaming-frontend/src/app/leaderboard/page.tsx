@@ -144,20 +144,22 @@ export default function LeaderboardPage() {
                   )}
                 </div>
               </div>
-              <div>
-                <h4 className="font-medium text-gray-700 mb-2">Winner</h4>
-                <div className="space-y-1">
-                  {session.participants.filter(p => p.isWinner).length > 0 ? (
-                    session.participants
-                      .filter(p => p.isWinner)
-                      .map((winner, index) => (
-                        <div key={index} className="text-sm text-green-600">
-                          {winner.user.username}
-                        </div>
-                      ))
-                  ) : (
-                    <div className="text-sm text-gray-500">No winner</div>
-                  )}
+              <div className="w-full">
+                <h4 className="font-medium text-gray-700 mb-2 text-center">Winner</h4>
+                <div className="w-full flex justify-center">
+                  <div className="space-y-1">
+                    {session.participants.filter(p => p.isWinner).length > 0 ? (
+                      session.participants
+                        .filter(p => p.isWinner)
+                        .map((winner, index) => (
+                          <div key={index} className="text-sm text-green-600 text-center">
+                            {winner.user.username}
+                          </div>
+                        ))
+                    ) : (
+                      <div className="text-sm text-gray-500 text-center">No winner</div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
