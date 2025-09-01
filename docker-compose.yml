@@ -1,0 +1,81 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: igaming-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: igaming
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - igaming-network
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: igaming-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@igaming.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_LISTEN_PORT: 80
+    ports:
+      - "8080:80"
+    depends_on:
+      - postgres
+    networks:
+      - igaming-network
+
+  backend:
+    build:
+      context: ./iGaming-backend
+      dockerfile: Dockerfile
+    container_name: igaming-backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: "postgresql://postgres:password@postgres:5432/igaming?schema=public"
+      JWT_SECRET: "your-super-secret-jwt-key-change-this-in-production"
+      JWT_EXPIRES_IN: "24h"
+      SESSION_DURATION: 20
+      MAX_PLAYERS_PER_SESSION: 10
+      PORT: 3001
+    ports:
+      - "3001:3001"
+    depends_on:
+      - postgres
+    volumes:
+      - ./iGaming-backend:/app
+      - /app/node_modules
+    networks:
+      - igaming-network
+
+  frontend:
+    build:
+      context: ./iGaming-frontend
+      dockerfile: Dockerfile
+    container_name: igaming-frontend
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_URL: "http://localhost:3001"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    volumes:
+      - ./iGaming-frontend:/app
+      - /app/node_modules
+      - /app/.next
+    networks:
+      - igaming-network
+
+volumes:
+  postgres_data:
+
+networks:
+  igaming-network:
+    driver: bridge
