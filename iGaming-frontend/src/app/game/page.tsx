@@ -151,9 +151,6 @@ export default function GamePage() {
               <div>Total Players: {gameResult.totalPlayers}</div>
               <div>Total Winners: {gameResult.totalWinners}</div>
             </div>
-            <div className="mt-4 text-red-500 text-sm">
-              New session starts in 10s...
-            </div>
           </div>
 
           <div className="card">

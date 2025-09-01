@@ -118,7 +118,9 @@ export default function LeaderboardPage() {
           <div key={session.id} className="card">
             <div className="flex justify-between items-start mb-4">
               <div>
-                <div className="text-lg font-semibold text-gray-900">Session {session.sessionNumber}</div>
+                <div className="text-lg font-semibold text-gray-900">
+                  Session {session.sessionNumber || session.id.slice(-4)}
+                </div>
                 <div className="text-sm text-gray-500">{formatDate(session.startedAt)}</div>
               </div>
               <div className="text-right">
@@ -132,9 +134,9 @@ export default function LeaderboardPage() {
                 <div className="space-y-1">
                   {session.participants.length > 0 ? (
                     session.participants.map((participant, index) => (
-                      <div key={index} className="text-sm flex justify-between">
+                      <div key={index} className="text-sm">
                         <span className="text-gray-900">{participant.user.username}</span>
-                        <span className="text-gray-500">#{participant.chosenNumber || 'No pick'}</span>
+                        <span className="text-gray-500 ml-2">({participant.chosenNumber || 'No pick'})</span>
                       </div>
                     ))
                   ) : (
@@ -143,7 +145,7 @@ export default function LeaderboardPage() {
                 </div>
               </div>
               <div>
-                <h4 className="font-medium text-gray-700 mb-2">Winners</h4>
+                <h4 className="font-medium text-gray-700 mb-2">Winner</h4>
                 <div className="space-y-1">
                   {session.participants.filter(p => p.isWinner).length > 0 ? (
                     session.participants
@@ -154,7 +156,7 @@ export default function LeaderboardPage() {
                         </div>
                       ))
                   ) : (
-                    <div className="text-sm text-gray-500">No winners</div>
+                    <div className="text-sm text-gray-500">No winner</div>
                   )}
                 </div>
               </div>

@@ -8,19 +8,15 @@ export class LeaderboardService {
   async getTopPlayers(limit: number = 10) {
     const players = await this.prisma.user.findMany({
       include: {
-        sessions: {
-          where: {
-            isWinner: true,
-          },
-        },
+        sessions: true, // Get all sessions (wins and losses)
       },
     });
 
     const playersWithStats = players.map(player => ({
       id: player.id,
       username: player.username,
-      wins: player.sessions.length,
-      totalGames: player.sessions.length,
+      wins: player.sessions.filter(session => session.isWinner).length,
+      totalGames: player.sessions.length, // Count all games, not just wins
     }));
 
     return playersWithStats
@@ -59,7 +55,7 @@ export class LeaderboardService {
         },
       },
       orderBy: {
-        sessionNumber: 'desc', // Order by session number instead of date
+        startedAt: 'desc', // Order by date
       },
     });
   }
