@@ -52,6 +52,7 @@ cd igaming-lobby-system
 
 2. Start all services with Docker Compose:
 ```bash
+docker-compose build --no-cache
 docker-compose up -d
 ```
 
