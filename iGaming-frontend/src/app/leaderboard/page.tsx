@@ -15,6 +15,7 @@ interface Player {
 
 interface Session {
   id: string
+  sessionNumber: number
   startedAt: string
   winningNumber: number
   participants: Array<{
@@ -117,7 +118,7 @@ export default function LeaderboardPage() {
           <div key={session.id} className="card">
             <div className="flex justify-between items-start mb-4">
               <div>
-                <div className="text-lg font-semibold text-gray-900">Session {session.id.slice(0, 8)}</div>
+                <div className="text-lg font-semibold text-gray-900">Session {session.sessionNumber}</div>
                 <div className="text-sm text-gray-500">{formatDate(session.startedAt)}</div>
               </div>
               <div className="text-right">
@@ -129,24 +130,32 @@ export default function LeaderboardPage() {
               <div>
                 <h4 className="font-medium text-gray-700 mb-2">Players</h4>
                 <div className="space-y-1">
-                  {session.participants.map((participant, index) => (
-                    <div key={index} className="text-sm flex justify-between">
-                      <span className="text-gray-900">{participant.user.username}</span>
-                      <span className="text-gray-500">#{participant.chosenNumber}</span>
-                    </div>
-                  ))}
+                  {session.participants.length > 0 ? (
+                    session.participants.map((participant, index) => (
+                      <div key={index} className="text-sm flex justify-between">
+                        <span className="text-gray-900">{participant.user.username}</span>
+                        <span className="text-gray-500">#{participant.chosenNumber || 'No pick'}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-sm text-gray-500">No players</div>
+                  )}
                 </div>
               </div>
               <div>
                 <h4 className="font-medium text-gray-700 mb-2">Winners</h4>
                 <div className="space-y-1">
-                  {session.participants
-                    .filter(p => p.isWinner)
-                    .map((winner, index) => (
-                      <div key={index} className="text-sm text-green-600">
-                        {winner.user.username}
-                      </div>
-                    ))}
+                  {session.participants.filter(p => p.isWinner).length > 0 ? (
+                    session.participants
+                      .filter(p => p.isWinner)
+                      .map((winner, index) => (
+                        <div key={index} className="text-sm text-green-600">
+                          {winner.user.username}
+                        </div>
+                      ))
+                  ) : (
+                    <div className="text-sm text-gray-500">No winners</div>
+                  )}
                 </div>
               </div>
             </div>
