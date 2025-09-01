@@ -27,25 +27,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    console.log('AuthContext useEffect: Starting token restoration...')
     const savedToken = localStorage.getItem('token')
+    console.log('AuthContext useEffect: savedToken exists:', !!savedToken)
+    
     if (savedToken) {
+      console.log('AuthContext useEffect: Setting token and axios header')
       setToken(savedToken)
       axios.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`
       
       // Decode JWT to get user data
       try {
+        console.log('AuthContext useEffect: Attempting to decode JWT...')
         const payload = JSON.parse(atob(savedToken.split('.')[1]))
+        console.log('AuthContext useEffect: Decoded payload:', payload)
+        
+        // Simplified - don't check expiration for now to debug
         setUser({
           id: payload.sub,
           username: payload.username
         })
+        console.log('AuthContext useEffect: User set successfully')
       } catch (error) {
-        console.error('Error decoding token:', error)
+        console.error('AuthContext useEffect: Error decoding token:', error)
         // If token is invalid, remove it
         localStorage.removeItem('token')
         delete axios.defaults.headers.common['Authorization']
+        setToken(null)
+        setUser(null)
       }
+    } else {
+      console.log('AuthContext useEffect: No saved token found')
     }
+    
+    console.log('AuthContext useEffect: Setting loading to false')
     setLoading(false)
   }, [])
 

@@ -122,14 +122,14 @@ export default function GamePage() {
           <div className="text-6xl font-bold text-primary-600 mb-4">
             {gameResult.winningNumber}
           </div>
-          <h2 className={`text-2xl font-bold mb-4 ${isWinner ? 'text-green-600' : 'text-red-600'}`}>
+          <h2 className={`text-2xl font-bold mb-4 font-heading ${isWinner ? 'text-green-600' : 'text-red-600'}`}>
             {isWinner ? 'Congratulations! You Won!' : 'Better luck next time!'}
           </h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="card">
-            <h3 className="font-semibold text-gray-700 mb-2">Active Users in Session</h3>
+            <h3 className="font-semibold text-gray-700 mb-2 font-heading">Active Users in Session</h3>
             <div className="space-y-1">
               {gameResult.winners.map((winner, index) => (
                 <div key={index} className="text-sm">
@@ -143,7 +143,7 @@ export default function GamePage() {
           </div>
 
           <div className="card text-center">
-            <h3 className="font-semibold text-gray-700 mb-4">Result</h3>
+            <h3 className="font-semibold text-gray-700 mb-4 font-heading">Result</h3>
             <div className="text-4xl font-bold text-primary-600 mb-2">
               {gameResult.winningNumber}
             </div>
@@ -154,7 +154,7 @@ export default function GamePage() {
           </div>
 
           <div className="card">
-            <h3 className="font-semibold text-gray-700 mb-2">Winners</h3>
+            <h3 className="font-semibold text-gray-700 mb-2 font-heading">Winners</h3>
             <div className="space-y-1">
               {gameResult.winners.map((winner, index) => (
                 <div key={index} className="text-sm text-green-600">
@@ -210,7 +210,7 @@ export default function GamePage() {
           <div className="card text-center max-w-2xl mx-auto">
             {gamePhase === 'choosing' ? (
               <div>
-                <h1 className="text-3xl font-bold mb-6">Pick a number from 1-9</h1>
+                <h1 className="text-3xl font-bold mb-6 font-heading">Pick a number from 1-9</h1>
                 
                 {error && (
                   <div className="mb-6 p-3 bg-red-100 border border-red-300 text-red-700 rounded-md">
@@ -231,7 +231,7 @@ export default function GamePage() {
               </div>
             ) : (
               <div>
-                <h1 className="text-3xl font-bold mb-6">
+                <h1 className="text-3xl font-bold mb-6 font-heading">
                   {chosenNumber ? `You chose ${chosenNumber}` : 'Waiting for game to end...'}
                 </h1>
                 <p className="text-gray-600 mb-6">

@@ -75,7 +75,7 @@ export default function LeaderboardPage() {
 
   const renderTopPlayers = () => (
     <div className="space-y-4">
-      <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+      <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2 font-heading">
         <Trophy className="w-6 h-6 text-yellow-500" />
         Top 10 Players
       </h2>
@@ -109,7 +109,7 @@ export default function LeaderboardPage() {
 
   const renderSessions = () => (
     <div className="space-y-4">
-      <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+      <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2 font-heading">
         <Calendar className="w-6 h-6 text-blue-500" />
         Recent Sessions
       </h2>
@@ -130,7 +130,7 @@ export default function LeaderboardPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <h4 className="font-medium text-gray-700 mb-2">Players</h4>
+                <h4 className="font-medium text-gray-700 mb-2 font-heading">Players</h4>
                 <div className="space-y-1">
                   {session.participants.length > 0 ? (
                     session.participants.map((participant, index) => (
@@ -145,21 +145,19 @@ export default function LeaderboardPage() {
                 </div>
               </div>
               <div className="w-full">
-                <h4 className="font-medium text-gray-700 mb-2 text-center">Winner</h4>
-                <div className="w-full flex justify-center">
-                  <div className="space-y-1">
-                    {session.participants.filter(p => p.isWinner).length > 0 ? (
-                      session.participants
-                        .filter(p => p.isWinner)
-                        .map((winner, index) => (
-                          <div key={index} className="text-sm text-green-600 text-center">
-                            {winner.user.username}
-                          </div>
-                        ))
-                    ) : (
-                      <div className="text-sm text-gray-500 text-center">No winner</div>
-                    )}
-                  </div>
+                <h4 className="font-medium text-gray-700 mb-2 text-center font-heading">Winner</h4>
+                <div className="w-full text-center">
+                  {session.participants.filter(p => p.isWinner).length > 0 ? (
+                    session.participants
+                      .filter(p => p.isWinner)
+                      .map((winner, index) => (
+                        <div key={index} className="text-sm text-green-600">
+                          {winner.user.username}
+                        </div>
+                      ))
+                  ) : (
+                    <div className="text-sm text-gray-500">No winner</div>
+                  )}
                 </div>
               </div>
             </div>
@@ -172,7 +170,7 @@ export default function LeaderboardPage() {
   const renderWinnersByPeriod = () => (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+        <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2 font-heading">
           <Filter className="w-6 h-6 text-purple-500" />
           Winners by Period
         </h2>
@@ -230,7 +228,7 @@ export default function LeaderboardPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
       <div className="max-w-6xl mx-auto">
         <header className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Leaderboard</h1>
+          <h1 className="text-3xl font-bold text-gray-900 font-heading">Leaderboard</h1>
           <button
             onClick={() => router.push('/home')}
             className="btn-secondary flex items-center gap-2"

@@ -23,7 +23,7 @@ interface UserStats {
 }
 
 export default function HomePage() {
-  const { user, logout } = useAuth()
+  const { user, logout, loading: authLoading } = useAuth()
   const router = useRouter()
   const socket = useSocket()
   const [sessionStatus, setSessionStatus] = useState<SessionStatus>({
@@ -42,6 +42,9 @@ export default function HomePage() {
   const [error, setError] = useState('')
 
   useEffect(() => {
+    // Wait for auth loading to complete before checking user
+    if (authLoading) return
+    
     if (!user) {
       router.push('/')
       return
@@ -49,7 +52,7 @@ export default function HomePage() {
 
     fetchSessionStatus()
     fetchUserStats()
-  }, [user, router])
+  }, [user, router, authLoading])
 
   useEffect(() => {
     if (socket) {
@@ -114,12 +117,21 @@ export default function HomePage() {
     return `${seconds}s`
   }
 
+  // Show loading state while auth is initializing
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="animate-spin w-12 h-12 border-4 border-primary-600 border-t-transparent rounded-full"></div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
       <div className="max-w-4xl mx-auto">
         <header className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Hi {user?.username}</h1>
+            <h1 className="text-3xl font-bold text-gray-900 font-heading">Hi {user?.username}</h1>
             <p className="text-gray-600">Welcome to the game lobby</p>
           </div>
           <button
@@ -133,7 +145,7 @@ export default function HomePage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <div className="card">
-            <h3 className="text-lg font-semibold mb-4">Session Info</h3>
+            <h3 className="text-lg font-semibold mb-4 font-heading">Session Info</h3>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-gray-600">Status:</span>
@@ -165,7 +177,7 @@ export default function HomePage() {
           </div>
 
           <div className="card">
-            <h3 className="text-lg font-semibold mb-4">User Stats</h3>
+            <h3 className="text-lg font-semibold mb-4 font-heading">User Stats</h3>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-gray-600">Total Wins:</span>
@@ -186,7 +198,7 @@ export default function HomePage() {
         <div className="card text-center">
           {sessionStatus.hasActiveSession && sessionStatus.timeLeft > 0 ? (
             <div>
-              <h2 className="text-2xl font-bold mb-4">Active Session Available!</h2>
+              <h2 className="text-2xl font-bold mb-4 font-heading">Active Session Available!</h2>
               <p className="text-gray-600 mb-6">
                 There is an active session, you can join in {formatTime(sessionStatus.timeLeft)}
               </p>
@@ -205,7 +217,7 @@ export default function HomePage() {
             </div>
           ) : (
             <div>
-              <h2 className="text-2xl font-bold mb-4">No Active Session</h2>
+              <h2 className="text-2xl font-bold mb-4 font-heading">No Active Session</h2>
               <p className="text-gray-600 mb-6">
                 Waiting for the next session to start...
               </p>
