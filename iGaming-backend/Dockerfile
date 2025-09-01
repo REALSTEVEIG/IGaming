@@ -17,4 +17,5 @@ RUN npx prisma generate
 
 EXPOSE 3001
 
-CMD ["npm", "run", "start:prod"]
+# Add a shell script that runs migrations and starts the app
+CMD ["sh", "-c", "npx prisma db push --skip-generate && npm run start:prod"]
