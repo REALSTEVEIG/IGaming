@@ -28,21 +28,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const initializeAuth = () => {
+      // Check if we're on the client side
+      if (typeof window === 'undefined') {
+        setLoading(false)
+        return
+      }
+
       console.log('AuthContext useEffect: Starting token restoration...')
-      const savedToken = localStorage.getItem('token')
-      console.log('AuthContext useEffect: savedToken exists:', !!savedToken)
       
-      if (savedToken) {
-        try {
+      try {
+        const savedToken = localStorage.getItem('token')
+        console.log('AuthContext useEffect: savedToken exists:', !!savedToken)
+        
+        if (savedToken) {
           console.log('AuthContext useEffect: Setting token and axios header')
           
           // Decode JWT to get user data
           const payload = JSON.parse(atob(savedToken.split('.')[1]))
           console.log('AuthContext useEffect: Decoded payload:', payload)
           
-          // Check if token is expired
+          // Check if token is expired (optional - remove if causing issues)
           const currentTime = Date.now() / 1000
-          if (payload.exp && payload.exp < currentTime) {
+          const isExpired = payload.exp && payload.exp < currentTime
+          
+          if (isExpired) {
             console.log('AuthContext useEffect: Token expired')
             localStorage.removeItem('token')
             delete axios.defaults.headers.common['Authorization']
@@ -58,25 +67,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             })
             console.log('AuthContext useEffect: User set successfully')
           }
-        } catch (error) {
-          console.error('AuthContext useEffect: Error decoding token:', error)
-          // If token is invalid, remove it
-          localStorage.removeItem('token')
-          delete axios.defaults.headers.common['Authorization']
-          setToken(null)
-          setUser(null)
+        } else {
+          console.log('AuthContext useEffect: No saved token found')
         }
-      } else {
-        console.log('AuthContext useEffect: No saved token found')
+      } catch (error) {
+        console.error('AuthContext useEffect: Error with token:', error)
+        // If any error occurs, clear everything
+        try {
+          localStorage.removeItem('token')
+        } catch (e) {
+          console.error('Error removing token from localStorage:', e)
+        }
+        delete axios.defaults.headers.common['Authorization']
+        setToken(null)
+        setUser(null)
       }
       
       console.log('AuthContext useEffect: Setting loading to false')
       setLoading(false)
     }
 
-    // Add a small delay to ensure localStorage is available
-    const timer = setTimeout(initializeAuth, 100)
-    return () => clearTimeout(timer)
+    // Initialize immediately on mount
+    initializeAuth()
   }, [])
 
   const login = async (username: string) => {
@@ -86,10 +98,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       })
       
       const { accessToken, user: userData } = response.data
+      
+      // Set axios header first
+      axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`
+      
+      // Set state
       setToken(accessToken)
       setUser(userData)
-      localStorage.setItem('token', accessToken)
-      axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`
+      
+      // Save to localStorage with error handling
+      try {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('token', accessToken)
+          console.log('Token saved to localStorage:', accessToken.substring(0, 20) + '...')
+        }
+      } catch (storageError) {
+        console.error('Failed to save token to localStorage:', storageError)
+      }
     } catch (error) {
       throw error
     }
@@ -102,10 +127,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       })
       
       const { accessToken, user: userData } = response.data
+      
+      // Set axios header first
+      axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`
+      
+      // Set state
       setToken(accessToken)
       setUser(userData)
-      localStorage.setItem('token', accessToken)
-      axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`
+      
+      // Save to localStorage with error handling
+      try {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('token', accessToken)
+          console.log('Token saved to localStorage:', accessToken.substring(0, 20) + '...')
+        }
+      } catch (storageError) {
+        console.error('Failed to save token to localStorage:', storageError)
+      }
     } catch (error) {
       throw error
     }
@@ -114,7 +152,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = () => {
     setToken(null)
     setUser(null)
-    localStorage.removeItem('token')
+    
+    // Clear localStorage with error handling
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('token')
+        console.log('Token removed from localStorage')
+      }
+    } catch (storageError) {
+      console.error('Failed to remove token from localStorage:', storageError)
+    }
+    
     delete axios.defaults.headers.common['Authorization']
   }
 

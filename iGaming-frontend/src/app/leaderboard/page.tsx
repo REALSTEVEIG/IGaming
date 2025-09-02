@@ -128,8 +128,8 @@ export default function LeaderboardPage() {
                 <div className="text-sm text-gray-500">Winning Number</div>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
+            <div className="flex">
+              <div className="flex-1">
                 <h4 className="font-medium text-gray-700 mb-2 font-heading">Players</h4>
                 <div className="space-y-1">
                   {session.participants.length > 0 ? (
@@ -144,19 +144,19 @@ export default function LeaderboardPage() {
                   )}
                 </div>
               </div>
-              <div className="w-full flex flex-col items-center">
-                <h4 className="font-medium text-gray-700 mb-2 text-center font-heading">Winner</h4>
-                <div className="w-full flex justify-center">
+              <div className="flex-1 text-center">
+                <h4 className="font-medium text-gray-700 mb-2 font-heading">Winner</h4>
+                <div className="text-center">
                   {session.participants.filter(p => p.isWinner).length > 0 ? (
                     session.participants
                       .filter(p => p.isWinner)
                       .map((winner, index) => (
-                        <div key={index} className="text-sm text-green-600 text-center">
+                        <div key={index} className="text-sm text-green-600">
                           {winner.user.username}
                         </div>
                       ))
                   ) : (
-                    <div className="text-sm text-gray-500 text-center">No winner</div>
+                    <div className="text-sm text-gray-500">No winner</div>
                   )}
                 </div>
               </div>
