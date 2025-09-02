@@ -12,14 +12,36 @@ export class LeaderboardService {
       },
     });
 
-    const playersWithStats = players.map(player => ({
-      id: player.id,
-      username: player.username,
-      wins: player.sessions.filter(session => session.isWinner).length,
-      totalGames: player.sessions.length, // Count all games, not just wins
-    }));
+    // Group players by username (case-insensitive) to handle duplicates
+    const playerGroups = new Map<string, {
+      id: string;
+      username: string;
+      wins: number;
+      totalGames: number;
+    }>();
 
-    return playersWithStats
+    players.forEach(player => {
+      const normalizedUsername = player.username.toLowerCase();
+      const wins = player.sessions.filter(session => session.isWinner).length;
+      const totalGames = player.sessions.length;
+
+      if (playerGroups.has(normalizedUsername)) {
+        // Merge stats if duplicate username found
+        const existing = playerGroups.get(normalizedUsername);
+        existing.wins += wins;
+        existing.totalGames += totalGames;
+        // Keep the original casing of the first occurrence
+      } else {
+        playerGroups.set(normalizedUsername, {
+          id: player.id,
+          username: player.username,
+          wins,
+          totalGames,
+        });
+      }
+    });
+
+    return Array.from(playerGroups.values())
       .sort((a, b) => b.wins - a.wins)
       .slice(0, limit);
   }
@@ -97,25 +119,31 @@ export class LeaderboardService {
       },
     });
 
+    // Use a Map to track by normalized username to prevent case-sensitive duplicates
     const winnerCounts = new Map<string, { username: string; wins: number }>();
 
     sessions.forEach(session => {
       session.participants.forEach(participant => {
-        const userId = participant.user.id;
-        if (winnerCounts.has(userId)) {
-          winnerCounts.get(userId).wins++;
+        const username = participant.user.username;
+        const normalizedUsername = username.toLowerCase();
+        
+        if (winnerCounts.has(normalizedUsername)) {
+          winnerCounts.get(normalizedUsername).wins++;
         } else {
-          winnerCounts.set(userId, {
-            username: participant.user.username,
+          winnerCounts.set(normalizedUsername, {
+            username: username, // Keep original casing
             wins: 1,
           });
         }
       });
     });
 
-    return Array.from(winnerCounts.values())
+    // Convert to array and sort by wins descending
+    const sortedWinners = Array.from(winnerCounts.values())
       .sort((a, b) => b.wins - a.wins)
       .slice(0, 10);
+
+    return sortedWinners;
   }
   async getUserStats(userId: string) {
     const user = await this.prisma.user.findUnique({

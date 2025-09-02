@@ -44,26 +44,10 @@ export class AuthService {
 
     const user = await this.prisma.user.findUnique({
       where: { username },
-      include: {
-        sessions: {
-          include: {
-            session: true,
-          },
-          where: {
-            session: {
-              isActive: true,
-            },
-          },
-        },
-      },
     });
 
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
-    }
-
-    if (user.sessions.length > 0) {
-      throw new UnauthorizedException('User already has an active session');
     }
 
     const payload = { sub: user.id, username: user.username };
