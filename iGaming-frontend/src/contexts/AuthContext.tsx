@@ -27,41 +27,56 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    console.log('AuthContext useEffect: Starting token restoration...')
-    const savedToken = localStorage.getItem('token')
-    console.log('AuthContext useEffect: savedToken exists:', !!savedToken)
-    
-    if (savedToken) {
-      console.log('AuthContext useEffect: Setting token and axios header')
-      setToken(savedToken)
-      axios.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`
+    const initializeAuth = () => {
+      console.log('AuthContext useEffect: Starting token restoration...')
+      const savedToken = localStorage.getItem('token')
+      console.log('AuthContext useEffect: savedToken exists:', !!savedToken)
       
-      // Decode JWT to get user data
-      try {
-        console.log('AuthContext useEffect: Attempting to decode JWT...')
-        const payload = JSON.parse(atob(savedToken.split('.')[1]))
-        console.log('AuthContext useEffect: Decoded payload:', payload)
-        
-        // Simplified - don't check expiration for now to debug
-        setUser({
-          id: payload.sub,
-          username: payload.username
-        })
-        console.log('AuthContext useEffect: User set successfully')
-      } catch (error) {
-        console.error('AuthContext useEffect: Error decoding token:', error)
-        // If token is invalid, remove it
-        localStorage.removeItem('token')
-        delete axios.defaults.headers.common['Authorization']
-        setToken(null)
-        setUser(null)
+      if (savedToken) {
+        try {
+          console.log('AuthContext useEffect: Setting token and axios header')
+          
+          // Decode JWT to get user data
+          const payload = JSON.parse(atob(savedToken.split('.')[1]))
+          console.log('AuthContext useEffect: Decoded payload:', payload)
+          
+          // Check if token is expired
+          const currentTime = Date.now() / 1000
+          if (payload.exp && payload.exp < currentTime) {
+            console.log('AuthContext useEffect: Token expired')
+            localStorage.removeItem('token')
+            delete axios.defaults.headers.common['Authorization']
+            setToken(null)
+            setUser(null)
+          } else {
+            // Token is valid
+            setToken(savedToken)
+            axios.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`
+            setUser({
+              id: payload.sub,
+              username: payload.username
+            })
+            console.log('AuthContext useEffect: User set successfully')
+          }
+        } catch (error) {
+          console.error('AuthContext useEffect: Error decoding token:', error)
+          // If token is invalid, remove it
+          localStorage.removeItem('token')
+          delete axios.defaults.headers.common['Authorization']
+          setToken(null)
+          setUser(null)
+        }
+      } else {
+        console.log('AuthContext useEffect: No saved token found')
       }
-    } else {
-      console.log('AuthContext useEffect: No saved token found')
+      
+      console.log('AuthContext useEffect: Setting loading to false')
+      setLoading(false)
     }
-    
-    console.log('AuthContext useEffect: Setting loading to false')
-    setLoading(false)
+
+    // Add a small delay to ensure localStorage is available
+    const timer = setTimeout(initializeAuth, 100)
+    return () => clearTimeout(timer)
   }, [])
 
   const login = async (username: string) => {

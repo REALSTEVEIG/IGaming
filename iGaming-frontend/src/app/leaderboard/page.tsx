@@ -92,7 +92,7 @@ export default function LeaderboardPage() {
                   {index + 1}
                 </div>
                 <span className="font-medium text-gray-900">{player.username}</span>
-                {player.username === user?.username && (
+                {player.username.toLowerCase() === user?.username.toLowerCase() && (
                   <span className="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded">You</span>
                 )}
               </div>
@@ -144,19 +144,19 @@ export default function LeaderboardPage() {
                   )}
                 </div>
               </div>
-              <div className="w-full">
+              <div className="w-full flex flex-col items-center">
                 <h4 className="font-medium text-gray-700 mb-2 text-center font-heading">Winner</h4>
-                <div className="w-full text-center">
+                <div className="w-full flex justify-center">
                   {session.participants.filter(p => p.isWinner).length > 0 ? (
                     session.participants
                       .filter(p => p.isWinner)
                       .map((winner, index) => (
-                        <div key={index} className="text-sm text-green-600">
+                        <div key={index} className="text-sm text-green-600 text-center">
                           {winner.user.username}
                         </div>
                       ))
                   ) : (
-                    <div className="text-sm text-gray-500">No winner</div>
+                    <div className="text-sm text-gray-500 text-center">No winner</div>
                   )}
                 </div>
               </div>
@@ -199,7 +199,7 @@ export default function LeaderboardPage() {
                   {index + 1}
                 </div>
                 <span className="font-medium text-gray-900">{winner.username}</span>
-                {winner.username === user?.username && (
+                {winner.username.toLowerCase() === user?.username.toLowerCase() && (
                   <span className="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded">You</span>
                 )}
               </div>
